@@ -41,6 +41,7 @@ class NearestNeighborQuery {
                                         &candidates_);
     auto distance_start_time = std::chrono::high_resolution_clock::now();
 
+    size_t dcs = 0;
     // TODO: use nullptr for pointer types
     LSHTableKeyType best_key = -1;
     if (candidates_.size() > 0) {
@@ -50,6 +51,7 @@ class NearestNeighborQuery {
       best_key = candidates_[0];
       DistanceType best_distance = dst_(q_comp, iter.get_point());
       ++iter;
+      dcs++;
 
       // printf("%d %f\n", candidates_[0], best_distance);
 
@@ -61,9 +63,11 @@ class NearestNeighborQuery {
           best_key = iter.get_key();
           // printf("  is new best\n");
         }
+        dcs++
         ++iter;
       }
     }
+    std::cout << dcs << std::endl;
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto elapsed_distance =
