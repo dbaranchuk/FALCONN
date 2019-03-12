@@ -43,7 +43,6 @@ class NearestNeighborQuery {
 
     // TODO: use nullptr for pointer types
     LSHTableKeyType best_key = -1;
-    std::cout << " " << candidates_.size() <<  " ";
     if (candidates_.size() > 0) {
       typename DataStorage::SubsequenceIterator iter =
           data_storage_.get_subsequence(candidates_);
