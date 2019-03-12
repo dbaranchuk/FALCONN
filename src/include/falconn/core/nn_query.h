@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 #include <iostream>
-
 #include "../falconn_global.h"
 #include "heap.h"
 
@@ -44,7 +43,7 @@ class NearestNeighborQuery {
 
     // TODO: use nullptr for pointer types
     LSHTableKeyType best_key = -1;
-
+    std::cout << num_probes << " " << max_num_candidates << " " << candidates_.size() <<  " ";
     if (candidates_.size() > 0) {
       typename DataStorage::SubsequenceIterator iter =
           data_storage_.get_subsequence(candidates_);
@@ -160,8 +159,6 @@ class NearestNeighborQuery {
 
     table_query_->get_unique_candidates(q, num_probes, max_num_candidates,
                                         &candidates_);
-    std::cout << candidates_.size() << " ";
-
     auto distance_start_time = std::chrono::high_resolution_clock::now();
 
     typename DataStorage::SubsequenceIterator iter =
