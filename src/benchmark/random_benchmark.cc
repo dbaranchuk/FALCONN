@@ -77,56 +77,36 @@ template <typename PointType>
 void run_experiment(LSHNearestNeighborTable<PointType>* table,
                     const vector<PointType>& queries,
                     const vector<int>& true_nns, int num_probes,
-                    int num_threads, double* avg_query_time,
+                    double* avg_query_time,
                     double* success_probability) {
   unique_ptr<LSHNearestNeighborQueryPool<PointType>> query_pool(
       table->construct_query_pool(num_probes));
-  vector<int> num_correct_per_thread(num_threads, 0);
-  vector<double> total_query_time_outside_per_thread(num_threads, 0.0);
-  vector<int> index_start(num_threads, 0);
-  vector<int> index_end(num_threads, 0);
+  vector<int> num_correct_per_thread(1, 0);
+  vector<double> total_query_time_outside_per_thread(1, 0.0);
+  vector<int> index_start(1, 0);
+  vector<int> index_end(1, 0);
 
-  int queries_per_thread = queries.size() / num_threads;
-  int remainder = queries.size() % num_threads;
+  int queries = queries.size();
   int last_end = 0;
-  for (int ii = 0; ii < num_threads; ++ii) {
-    index_start[ii] = last_end;
-    index_end[ii] = last_end + queries_per_thread;
-    if (ii < remainder) {
-      index_end[ii] += 1;
-    }
-    last_end = index_end[ii];
-  }
+  index_start[0] = last_end;
+  index_end[0] = last_end + queries;
 
   vector<thread> threads;
   Timer total_time;
 
-  for (int ii = 0; ii < num_threads; ++ii) {
-    threads.push_back(thread(thread_function<PointType>, query_pool.get(),
-                             cref(queries), cref(true_nns), index_start[ii],
-                             index_end[ii], &(num_correct_per_thread[ii]),
-                             &(total_query_time_outside_per_thread[ii])));
-  }
-  for (int ii = 0; ii < num_threads; ++ii) {
-    threads[ii].join();
-  }
+  threads.push_back(thread(thread_function<PointType>, query_pool.get(),
+          cref(queries), cref(true_nns), index_start[ii],
+          index_end[ii], &(num_correct_per_thread[ii]),
+          &(total_query_time_outside_per_thread[ii])));
+  threads[0].join();
+
 
   double total_computation_time = total_time.elapsed_seconds();
-
-  double average_query_time_outside = 0.0;
-  *success_probability = 0.0;
-  for (int ii = 0; ii < num_threads; ++ii) {
-    *success_probability += num_correct_per_thread[ii];
-    average_query_time_outside += total_query_time_outside_per_thread[ii];
-  }
-  *success_probability /= queries.size();
-  average_query_time_outside /= queries.size();
-  *avg_query_time = average_query_time_outside;
+  *success_probability = num_correct_per_thread[0] / queries.size();
+  *avg_query_time = total_query_time_outside_per_thread[0] / queries.size();
 
   cout << "Total experiment wall clock time: " << scientific
        << total_computation_time << " seconds" << endl;
-  cout << "Average query time (measured outside): " << scientific
-       << average_query_time_outside << " seconds" << endl;
   cout << "Empirical success probability: " << fixed << *success_probability
        << endl
        << endl;
@@ -145,24 +125,6 @@ void run_experiment(LSHNearestNeighborTable<PointType>* table,
   cout << "Average number of unique candidates: "
        << stats.average_num_unique_candidates << endl
        << endl;
-  cout << "Diagnostics:" << endl;
-  double threading_imbalance =
-      total_computation_time -
-      average_query_time_outside * queries.size() / num_threads;
-  cout << "Threading imbalance (total_wall_clock_time - sum of query times "
-       << "outside / num_threads): " << threading_imbalance << " seconds ("
-       << 100.0 * threading_imbalance / total_computation_time
-       << " % of the total wall clock time)" << endl;
-  double mismatch = average_query_time_outside - stats.average_total_query_time;
-  cout << "Outside - inside average total query time: " << scientific
-       << mismatch << " seconds (" << fixed
-       << 100.0 * mismatch / average_query_time_outside << " %)" << endl;
-  double unaccounted = stats.average_total_query_time - stats.average_lsh_time -
-                       stats.average_hash_table_time -
-                       stats.average_distance_time;
-  cout << "Unaccounted inside query time: " << scientific << unaccounted
-       << " seconds (" << fixed
-       << 100.0 * unaccounted / stats.average_total_query_time << " %)" << endl;
 }
 
 int main() {
@@ -181,16 +143,11 @@ int main() {
     // Common LSH parameters
     int num_tables = 10;
     int num_setup_threads = 0;
-    // TODO: make this a program argument (should we use a parsing library?)
-    int num_query_threads = 1;
     StorageHashTable storage_hash_table = StorageHashTable::FlatHashTable;
     DistanceFunction distance_function = DistanceFunction::EuclideanSquared;
 
     cout << sepline << endl;
     cout << "FALCONN C++ random data benchmark" << endl << endl;
-    cout << "std::thread::hardware_concurrency(): "
-         << thread::hardware_concurrency() << endl;
-    cout << "num_query_threads = " << num_query_threads << endl << endl;
     cout << "Data set parameters: " << endl;
     cout << "n = " << n << endl;
     cout << "d = " << d << endl;
@@ -287,8 +244,7 @@ int main() {
 
     double cp_avg_time;
     double cp_success_prob;
-    run_experiment(cptable.get(), queries, true_nn, num_probes_cp,
-                   num_query_threads, &cp_avg_time, &cp_success_prob);
+    run_experiment(cptable.get(), queries, true_nn, num_probes_cp, &cp_avg_time, &cp_success_prob);
 
     cout << sepline << endl << "Summary:" << endl;
     cout << "Success probabilities:" << endl;
