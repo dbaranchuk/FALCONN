@@ -176,6 +176,7 @@ int main() {
     size_t d = 128;                 // dimension
     size_t num_queries = 10000;      // number of query points
     double r = sqrt(2.0) / 2.0;  // distance to planted query
+    uint64_t seed = 119417657;
 
     // Common LSH parameters
     int num_tables = 10;
@@ -194,7 +195,8 @@ int main() {
     cout << "n = " << n << endl;
     cout << "d = " << d << endl;
     cout << "num_queries = " << num_queries << endl;
-    cout << "r = " << r << endl << sepline << endl;
+    cout << "r = " << r << endl;
+    cout << "seed = " << seed << endl << sepline << endl;
 
     // Load  data
     cout << "Load data set ..." << endl;
