@@ -255,7 +255,7 @@ int main() {
 
       size_t best_index = 0;
       float best_ip = q.dot(data[0]);
-      for (siez_t jj = 1; jj < n; ++jj) {
+      for (size_t jj = 1; jj < n; ++jj) {
         float cur_ip = q.dot(data[jj]);
         if (cur_ip > best_ip) {
           best_index = jj;
