@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 #include "../falconn_global.h"
 #include "heap.h"
