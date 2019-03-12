@@ -9,6 +9,7 @@
 #include <random>
 #include <stdexcept>
 #include <thread>
+#include <fstream>
 
 using std::cerr;
 using std::cout;
@@ -171,9 +172,9 @@ int main() {
         "-";
 
     // Data set parameters
-    int n = 1000000;             // number of data points
+    int n = 100000;             // number of data points
     int d = 128;                 // dimension
-    int num_queries = 1000;      // number of query points
+    int num_queries = 10000;      // number of query points
     double r = sqrt(2.0) / 2.0;  // distance to planted query
     uint64_t seed = 119417657;
 
@@ -201,37 +202,49 @@ int main() {
     normal_distribution<float> dist_normal(0.0, 1.0);
     uniform_int_distribution<int> dist_uniform(0, n - 1);
 
-    // Generate random data
-    cout << "Generating data set ..." << endl;
+    // Load  data
+    cout << "Load data set ..." << endl;
     vector<Vec> data;
-    for (int ii = 0; ii < n; ++ii) {
-      Vec v(d);
-      for (int jj = 0; jj < d; ++jj) {
-        v[jj] = dist_normal(gen);
+    {
+      float vec[d];
+      uint32_t dim = 0;
+      std::ifstream base_input("../../../data/SIFT100K/sift_base.fvecs", std::ios::binary);
+
+      for (size_t i = 0; i < n; i++) {
+        Vec v(d);
+        base_input.read((char *) &dim, sizeof(uint32_t));
+        if (dim != d) {
+          std::cout << "file error\n";
+          exit(1);
+        }
+        base_input.read((char *) vec, dim * sizeof(float));
+        for (int j = 0; j < d; ++j) v[j] = vec[j];
+        data.push_back(v);
+
+        std::cout << "Loading objects ...\t object: " << i + 1 << "\tProgress:" << std::fixed
+                  << std::setprecision(2) << (double) i / (double) (n + 1) * 100 << "%\r";
       }
-      v.normalize();
-      data.push_back(v);
     }
 
-    // Generate queries
-    cout << "Generating queries ..." << endl << endl;
+    // Load queries
+    cout << "Load queries ..." << endl << endl;
     vector<Vec> queries;
-    for (int ii = 0; ii < num_queries; ++ii) {
-      Vec q(d);
-      q = data[dist_uniform(gen)];
+    {
+      std::ifstream query_input("../../../data/SIFT100K/sift_query.fvecs", std::ios::binary);
+      float vec[d];
+      uint32_t dim = 0;
+      for (size_t i = 0; i < num_queries; i++){
+        Vec q(d);
 
-      Vec dir(d);
-      for (int jj = 0; jj < d; ++jj) {
-        dir[jj] = dist_normal(gen);
+        query_input.read((char *) &dim, sizeof(uint32_t));
+        if (dim != f) {
+          std::cout << "file error\n";
+          exit(1);
+        }
+        query_input.read((char *) vec, dim * sizeof(float));
+        for (int j = 0; j < d; ++j) q[j] = vec[j];
+        queries.push_back(q);
       }
-      dir.normalize();
-      dir = dir - dir.dot(q) * q;
-      dir.normalize();
-      double alpha = 1.0 - r * r / 2.0;
-      double beta = sqrt(1.0 - alpha * alpha);
-      q = alpha * q + beta * dir;
-
-      queries.push_back(q);
     }
 
     // Compute true nearest neighbors
