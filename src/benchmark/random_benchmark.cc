@@ -323,7 +323,7 @@ int main() {
     cout << "Average query times (seconds):" << endl;
     cout << "  Linear scan time: " << scientific << average_scan_time << endl;
     cout << "  CP time: " << cp_avg_time << endl;
-         << endl;
+
   } catch (exception& e) {
     cerr << "exception: " << e.what() << endl;
     return 1;
