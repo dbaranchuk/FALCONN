@@ -56,24 +56,6 @@ class Timer {
 };
 
 template <typename PointType>
-void thread_function(LSHNearestNeighborQueryPool<PointType>* query_pool,
-                     const vector<PointType>& queries,
-                     const vector<int>& true_nns, int query_index_start,
-                     int query_index_end, int* num_correct_in_thread,
-                     double* total_query_time_outside_in_thread) {
-  for (int ii = query_index_start; ii < query_index_end; ++ii) {
-    Timer query_time;
-
-    int32_t res = query_pool->find_nearest_neighbor(queries[ii]);
-
-    *total_query_time_outside_in_thread += query_time.elapsed_seconds();
-    if (res == true_nns[ii]) {
-      *num_correct_in_thread += 1;
-    }
-  }
-}
-
-template <typename PointType>
 void run_experiment(LSHNearestNeighborTable<PointType>* table,
                     const vector<PointType>& queries,
                     const vector<int>& true_nns, int num_probes,
@@ -81,22 +63,25 @@ void run_experiment(LSHNearestNeighborTable<PointType>* table,
                     double* success_probability) {
   unique_ptr<LSHNearestNeighborQueryPool<PointType>> query_pool(
       table->construct_query_pool(num_probes));
-  vector<int> num_correct_per_thread(1, 0);
-  vector<double> total_query_time_outside_per_thread(1, 0.0);
+  int num_correct = 0;
+  double total_query_time_outside = 0.0;
 
   int num_queries = queries.size();
   Timer total_time;
 
-  thread main_thread = thread(thread_function<PointType>, query_pool.get(),
-          cref(queries), cref(true_nns), 0, num_queries, &(num_correct_per_thread[0]),
-          &(total_query_time_outside_per_thread[0]));
-  main_thread.join();
+  for (int ii = 0; ii < num_queries; ++ii) {
+    Timer query_time;
 
-  std::cout << "FVEVE" << num_correct_per_thread[0] << std::endl;
+    int32_t res = query_pool->find_nearest_neighbor(queries[ii]);
+
+    total_query_time_outside += query_time.elapsed_seconds();
+    if (res == true_nns[ii])
+      num_correct += 1;
+  }
 
   double total_computation_time = total_time.elapsed_seconds();
-  *success_probability = num_correct_per_thread[0] / queries.size();
-  *avg_query_time = total_query_time_outside_per_thread[0] / queries.size();
+  *success_probability = num_correct / (float) queries.size();
+  *avg_query_time = total_query_time_outside / queries.size();
 
   cout << "Total experiment wall clock time: " << scientific
        << total_computation_time << " seconds" << endl;
@@ -191,7 +176,7 @@ int main() {
     }
     vector<int> true_nn(num_queries);
     {
-      std::cout << " Load groundtruths...\n";
+      std::cout << "Load groundtruths...\n";
       std::ifstream gt_input("../rl_hnsw/notebooks/data/SIFT100K/test_gt.ivecs", std::ios::binary);
       uint32_t dim = 0;
       for (size_t i = 0; i < num_queries; i++){
