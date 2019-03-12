@@ -208,7 +208,7 @@ int main() {
     {
       float vec[d];
       uint32_t dim = 0;
-      std::ifstream base_input("../data/SIFT100K/sift_base.fvecs", std::ios::binary);
+      std::ifstream base_input("../rl_hnsw/notebooks/data/SIFT100K/sift_base.fvecs", std::ios::binary);
 
       for (size_t i = 0; i < n; i++) {
         Vec v(d);
@@ -218,7 +218,7 @@ int main() {
           exit(1);
         }
         base_input.read((char *) vec, dim * sizeof(float));
-        for (int j = 0; j < d; ++j) v[j] = vec[j];
+        for (size_t j = 0; j < d; ++j) v[j] = vec[j];
         data.push_back(v);
       }
     }
@@ -227,7 +227,7 @@ int main() {
     cout << "Load queries ..." << endl;
     vector<Vec> queries;
     {
-      std::ifstream query_input("../data/SIFT100K/sift_query.fvecs", std::ios::binary);
+      std::ifstream query_input("../rl_hnsw/notebooks/data/SIFT100K/sift_query.fvecs", std::ios::binary);
       float vec[d];
       uint32_t dim = 0;
       for (size_t i = 0; i < num_queries; i++){
@@ -239,7 +239,7 @@ int main() {
           exit(1);
         }
         query_input.read((char *) vec, dim * sizeof(float));
-        for (int j = 0; j < d; ++j) q[j] = vec[j];
+        for (size_t j = 0; j < d; ++j) q[j] = vec[j];
         queries.push_back(q);
       }
     }
@@ -248,14 +248,14 @@ int main() {
     cout << "Computing true nearest neighbors via a linear scan ..." << endl;
     vector<int> true_nn(num_queries);
     double average_scan_time = 0.0;
-    for (int ii = 0; ii < num_queries; ++ii) {
+    for (size_t ii = 0; ii < num_queries; ++ii) {
       const Vec& q = queries[ii];
 
       Timer query_time;
 
-      int best_index = 0;
+      size_t best_index = 0;
       float best_ip = q.dot(data[0]);
-      for (int jj = 1; jj < n; ++jj) {
+      for (siez_t jj = 1; jj < n; ++jj) {
         float cur_ip = q.dot(data[jj]);
         if (cur_ip > best_ip) {
           best_index = jj;
