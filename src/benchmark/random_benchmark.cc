@@ -62,7 +62,7 @@ void run_experiment(LSHNearestNeighborTable<PointType>* table,
                     double* avg_query_time,
                     double* success_probability) {
   unique_ptr<LSHNearestNeighborQueryPool<PointType>> query_pool(
-      table->construct_query_pool(num_probes));
+      table->construct_query_pool(num_probes, 128));
   int num_correct = 0;
   double total_query_time_outside = 0.0;
 
