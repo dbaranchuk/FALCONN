@@ -220,14 +220,11 @@ int main() {
         base_input.read((char *) vec, dim * sizeof(float));
         for (int j = 0; j < d; ++j) v[j] = vec[j];
         data.push_back(v);
-
-        std::cout << "Loading objects ...\t object: " << i + 1 << "\tProgress:" << std::fixed
-                  << std::setprecision(2) << (double) i / (double) (n + 1) * 100 << "%\r";
       }
     }
 
     // Load queries
-    cout << "Load queries ..." << endl << endl;
+    cout << "Load queries ..." << endl;
     vector<Vec> queries;
     {
       std::ifstream query_input("../../../data/SIFT100K/sift_query.fvecs", std::ios::binary);
@@ -237,7 +234,7 @@ int main() {
         Vec q(d);
 
         query_input.read((char *) &dim, sizeof(uint32_t));
-        if (dim != f) {
+        if (dim != d) {
           std::cout << "file error\n";
           exit(1);
         }
