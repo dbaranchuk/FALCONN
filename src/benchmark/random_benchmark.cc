@@ -176,7 +176,6 @@ int main() {
     size_t d = 128;                 // dimension
     size_t num_queries = 10000;      // number of query points
     double r = sqrt(2.0) / 2.0;  // distance to planted query
-    uint64_t seed = 119417657;
 
     // Common LSH parameters
     int num_tables = 10;
@@ -184,7 +183,7 @@ int main() {
     // TODO: make this a program argument (should we use a parsing library?)
     int num_query_threads = 1;
     StorageHashTable storage_hash_table = StorageHashTable::FlatHashTable;
-    DistanceFunction distance_function = DistanceFunction::NegativeInnerProduct;
+    DistanceFunction distance_function = DistanceFunction::EuclideanSquared;
 
     cout << sepline << endl;
     cout << "FALCONN C++ random data benchmark" << endl << endl;
@@ -195,12 +194,7 @@ int main() {
     cout << "n = " << n << endl;
     cout << "d = " << d << endl;
     cout << "num_queries = " << num_queries << endl;
-    cout << "r = " << r << endl;
-    cout << "seed = " << seed << endl << sepline << endl;
-
-    mt19937_64 gen(seed);
-    normal_distribution<float> dist_normal(0.0, 1.0);
-    uniform_int_distribution<int> dist_uniform(0, n - 1);
+    cout << "r = " << r << endl << sepline << endl;
 
     // Load  data
     cout << "Load data set ..." << endl;
@@ -243,11 +237,26 @@ int main() {
         queries.push_back(q);
       }
     }
+    vector <int> gt(num_queries);
+    {
+      std::cout << " Load groundtruths...\n";
+      std::ifstream gt_input("../rl_hnsw/notebooks/data/SIFT100K/test_gt.ivecs", std::ios::binary);
+      uint32_t dim = 0;
+      for (size_t i = 0; i < num_queries; i++){
+        gt_input.read((char *) &dim, sizeof(uint32_t));
+        if (dim != 1) {
+          std::cout << "file error\n";
+          exit(1);
+        }
+        gt_input.read((char *) (gt.data() + dim*i), dim * sizeof(int));
+      }
+    }
 
     // Compute true nearest neighbors
     cout << "Computing true nearest neighbors via a linear scan ..." << endl;
     vector<int> true_nn(num_queries);
     double average_scan_time = 0.0;
+    size_t counter = 0;
     for (size_t ii = 0; ii < num_queries; ++ii) {
       const Vec& q = queries[ii];
 
@@ -263,46 +272,12 @@ int main() {
         }
       }
       true_nn[ii] = best_index;
-
+      counter += true_nn[ii] == gt[ii];
       average_scan_time += query_time.elapsed_seconds();
     }
     average_scan_time /= num_queries;
-    cout << "Average query time: " << average_scan_time << " seconds" << endl
+    cout << "Average query time: " << average_scan_time << " seconds "  << counter << endl
          << sepline << endl;
-
-    // Hyperplane hashing
-    LSHConstructionParameters params_hp;
-    params_hp.dimension = d;
-    params_hp.lsh_family = LSHFamily::Hyperplane;
-    params_hp.distance_function = distance_function;
-    params_hp.storage_hash_table = storage_hash_table;
-    params_hp.k = 19;
-    params_hp.l = num_tables;
-    params_hp.num_setup_threads = num_setup_threads;
-    params_hp.seed = seed ^ 833840234;
-    int num_probes_hp = 2464;
-
-    cout << "Hyperplane hash" << endl << endl;
-
-    Timer hp_construction;
-
-    unique_ptr<LSHNearestNeighborTable<Vec>> hptable(
-        std::move(construct_table<Vec>(data, params_hp)));
-
-    double hp_construction_time = hp_construction.elapsed_seconds();
-
-    cout << "k = " << params_hp.k << endl;
-    cout << "l = " << params_hp.l << endl;
-    cout << "Number of probes = " << num_probes_hp << endl;
-    cout << "Construction time: " << hp_construction_time << " seconds" << endl
-         << endl;
-
-    double hp_avg_time;
-    double hp_success_prob;
-    run_experiment(hptable.get(), queries, true_nn, num_probes_hp,
-                   num_query_threads, &hp_avg_time, &hp_success_prob);
-    cout << sepline << endl;
-    hptable.reset(nullptr);
 
     // Cross polytope hashing
     LSHConstructionParameters params_cp;
