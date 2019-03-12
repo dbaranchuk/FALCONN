@@ -159,6 +159,8 @@ class NearestNeighborQuery {
 
     table_query_->get_unique_candidates(q, num_probes, max_num_candidates,
                                         &candidates_);
+    std::cout << candidates_.size() << " ";
+
     auto distance_start_time = std::chrono::high_resolution_clock::now();
 
     typename DataStorage::SubsequenceIterator iter =
