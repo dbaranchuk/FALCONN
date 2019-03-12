@@ -83,22 +83,14 @@ void run_experiment(LSHNearestNeighborTable<PointType>* table,
       table->construct_query_pool(num_probes));
   vector<int> num_correct_per_thread(1, 0);
   vector<double> total_query_time_outside_per_thread(1, 0.0);
-  vector<int> index_start(1, 0);
-  vector<int> index_end(1, 0);
 
-  int queries = queries.size();
-  int last_end = 0;
-  index_start[0] = last_end;
-  index_end[0] = last_end + queries;
-
-  vector<thread> threads;
+  int num_queries = queries.size();
   Timer total_time;
 
-  threads.push_back(thread(thread_function<PointType>, query_pool.get(),
-          cref(queries), cref(true_nns), index_start[ii],
-          index_end[ii], &(num_correct_per_thread[ii]),
-          &(total_query_time_outside_per_thread[ii])));
-  threads[0].join();
+  thread main_thread = thread(thread_function<PointType>, query_pool.get(),
+          cref(queries), cref(true_nns), 0, num_queries, &(num_correct_per_thread[0]),
+          &(total_query_time_outside_per_thread[0])));
+  main_thread.join();
 
 
   double total_computation_time = total_time.elapsed_seconds();
