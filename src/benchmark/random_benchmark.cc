@@ -317,18 +317,11 @@ int main() {
 
     cout << sepline << endl << "Summary:" << endl;
     cout << "Success probabilities:" << endl;
-    cout << "  HP: " << fixed << hp_success_prob << endl;
     cout << "  CP: " << cp_success_prob << endl;
     cout << "Average query times (seconds):" << endl;
     cout << "  Linear scan time: " << scientific << average_scan_time << endl;
-    cout << "  HP time: " << hp_avg_time << endl;
     cout << "  CP time: " << cp_avg_time << endl;
-    cout << "Speed-ups:" << endl;
-    cout << "  HP vs linear scan: " << fixed << average_scan_time / hp_avg_time
          << endl;
-    cout << "  CP vs linear scan: " << fixed << average_scan_time / cp_avg_time
-         << endl;
-    cout << "  CP vs HP: " << fixed << hp_avg_time / cp_avg_time << endl;
   } catch (exception& e) {
     cerr << "exception: " << e.what() << endl;
     return 1;
