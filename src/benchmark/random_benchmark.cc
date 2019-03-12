@@ -199,7 +199,7 @@ int main() {
     params_cp.num_rotations = 3;
     params_cp.num_setup_threads = num_setup_threads;
     params_cp.seed = seed ^ 833840234;
-    int num_probes_cp = 1;
+    int num_probes_cp = 10;
 
     cout << "Cross polytope hash" << endl << endl;
 
@@ -226,7 +226,7 @@ int main() {
     cout << "Success probabilities:" << endl;
     cout << "  CP: " << cp_success_prob << endl;
     cout << "Average query times (seconds):" << endl;
-    cout << "  CP time: " << cp_avg_time << endl;
+    cout << "  CP time: " << cp_avg_time * 1e6 << endl;
 
   } catch (exception& e) {
     cerr << "exception: " << e.what() << endl;
