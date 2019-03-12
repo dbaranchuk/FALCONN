@@ -89,7 +89,7 @@ void run_experiment(LSHNearestNeighborTable<PointType>* table,
 
   thread main_thread = thread(thread_function<PointType>, query_pool.get(),
           cref(queries), cref(true_nns), 0, num_queries, &(num_correct_per_thread[0]),
-          &(total_query_time_outside_per_thread[0])));
+          &(total_query_time_outside_per_thread[0]));
   main_thread.join();
 
 
