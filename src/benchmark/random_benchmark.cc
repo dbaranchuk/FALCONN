@@ -239,7 +239,7 @@ int main() {
         queries.push_back(q);
       }
     }
-    vector <int> gt(num_queries);
+    vector<int> true_nn(num_queries);
     {
       std::cout << " Load groundtruths...\n";
       std::ifstream gt_input("../rl_hnsw/notebooks/data/SIFT100K/test_gt.ivecs", std::ios::binary);
@@ -250,36 +250,9 @@ int main() {
           std::cout << "file error\n";
           exit(1);
         }
-        gt_input.read((char *) (gt.data() + dim*i), dim * sizeof(int));
+        gt_input.read((char *) (true_nn.data() + dim*i), dim * sizeof(int));
       }
     }
-
-    // Compute true nearest neighbors
-    cout << "Computing true nearest neighbors via a linear scan ..." << endl;
-    vector<int> true_nn(num_queries);
-    double average_scan_time = 0.0;
-    size_t counter = 0;
-    for (size_t ii = 0; ii < num_queries; ++ii) {
-      const Vec& q = queries[ii];
-
-      Timer query_time;
-
-      size_t best_index = 0;
-      float best_ip = q.dot(data[0]);
-      for (size_t jj = 1; jj < n; ++jj) {
-        float cur_ip = q.dot(data[jj]);
-        if (cur_ip > best_ip) {
-          best_index = jj;
-          best_ip = cur_ip;
-        }
-      }
-      true_nn[ii] = best_index;
-      counter += true_nn[ii] == gt[ii];
-      average_scan_time += query_time.elapsed_seconds();
-    }
-    average_scan_time /= num_queries;
-    cout << "Average query time: " << average_scan_time << " seconds "  << counter << endl
-         << sepline << endl;
 
     // Cross polytope hashing
     LSHConstructionParameters params_cp;
@@ -321,7 +294,6 @@ int main() {
     cout << "Success probabilities:" << endl;
     cout << "  CP: " << cp_success_prob << endl;
     cout << "Average query times (seconds):" << endl;
-    cout << "  Linear scan time: " << scientific << average_scan_time << endl;
     cout << "  CP time: " << cp_avg_time << endl;
 
   } catch (exception& e) {
