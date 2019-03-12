@@ -199,7 +199,7 @@ int main() {
     params_cp.num_rotations = 3;
     params_cp.num_setup_threads = num_setup_threads;
     params_cp.seed = seed ^ 833840234;
-    int num_probes_cp = 896;
+    int num_probes_cp = 1;
 
     cout << "Cross polytope hash" << endl << endl;
 
