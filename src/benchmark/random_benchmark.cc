@@ -172,9 +172,9 @@ int main() {
         "-";
 
     // Data set parameters
-    int n = 100000;             // number of data points
-    int d = 128;                 // dimension
-    int num_queries = 10000;      // number of query points
+    size_t n = 100000;             // number of data points
+    size_t d = 128;                 // dimension
+    size_t num_queries = 10000;      // number of query points
     double r = sqrt(2.0) / 2.0;  // distance to planted query
     uint64_t seed = 119417657;
 
@@ -208,7 +208,7 @@ int main() {
     {
       float vec[d];
       uint32_t dim = 0;
-      std::ifstream base_input("../../../data/SIFT100K/sift_base.fvecs", std::ios::binary);
+      std::ifstream base_input("../data/SIFT100K/sift_base.fvecs", std::ios::binary);
 
       for (size_t i = 0; i < n; i++) {
         Vec v(d);
@@ -227,7 +227,7 @@ int main() {
     cout << "Load queries ..." << endl;
     vector<Vec> queries;
     {
-      std::ifstream query_input("../../../data/SIFT100K/sift_query.fvecs", std::ios::binary);
+      std::ifstream query_input("../data/SIFT100K/sift_query.fvecs", std::ios::binary);
       float vec[d];
       uint32_t dim = 0;
       for (size_t i = 0; i < num_queries; i++){
