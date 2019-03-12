@@ -92,6 +92,7 @@ void run_experiment(LSHNearestNeighborTable<PointType>* table,
           &(total_query_time_outside_per_thread[0]));
   main_thread.join();
 
+  std::cout << "FVEVE" << num_correct_per_thread[0] << std::endl;
 
   double total_computation_time = total_time.elapsed_seconds();
   *success_probability = num_correct_per_thread[0] / queries.size();
