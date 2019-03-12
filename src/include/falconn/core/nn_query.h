@@ -63,7 +63,7 @@ class NearestNeighborQuery {
           best_key = iter.get_key();
           // printf("  is new best\n");
         }
-        dcs++
+        dcs++;
         ++iter;
       }
     }
