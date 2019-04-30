@@ -67,7 +67,7 @@ class NearestNeighborQuery {
         ++iter;
       }
     }
-//    std::cout << dcs << std::endl;
+    std::cout << dcs << std::endl;
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto elapsed_distance =
