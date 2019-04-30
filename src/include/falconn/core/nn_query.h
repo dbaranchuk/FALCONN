@@ -64,9 +64,11 @@ class NearestNeighborQuery {
           // printf("  is new best\n");
         }
         dcs++;
+        if (dcs >= 512) break;
         ++iter;
       }
     }
+
     std::cout << dcs << std::endl;
 
     auto end_time = std::chrono::high_resolution_clock::now();
