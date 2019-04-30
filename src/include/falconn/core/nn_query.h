@@ -51,7 +51,7 @@ class NearestNeighborQuery {
       best_key = candidates_[0];
       DistanceType best_distance = dst_(q_comp, iter.get_point());
       ++iter;
-      dcs++;
+//      dcs++;
 
       // printf("%d %f\n", candidates_[0], best_distance);
 
@@ -63,8 +63,8 @@ class NearestNeighborQuery {
           best_key = iter.get_key();
           // printf("  is new best\n");
         }
-        dcs++;
-        if (dcs >= 512) break;
+//        dcs++;
+//        if (dcs >= 512) break;
         ++iter;
       }
     }
